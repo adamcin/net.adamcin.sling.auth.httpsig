@@ -1,3 +1,30 @@
+/*
+ * This is free and unencumbered software released into the public domain.
+ *
+ * Anyone is free to copy, modify, publish, use, compile, sell, or
+ * distribute this software, either in source code form or as a compiled
+ * binary, for any purpose, commercial or non-commercial, and by any
+ * means.
+ *
+ * In jurisdictions that recognize copyright laws, the author or authors
+ * of this software dedicate any and all copyright interest in the
+ * software to the public domain. We make this dedication for the benefit
+ * of the public at large and to the detriment of our heirs and
+ * successors. We intend this dedication to be an overt act of
+ * relinquishment in perpetuity of all present and future rights to this
+ * software under copyright law.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+ * IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+ * OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+ * OTHER DEALINGS IN THE SOFTWARE.
+ *
+ * For more information, please refer to <http://unlicense.org/>
+ */
+
 package net.adamcin.sling.auth.httpsig.impl;
 
 import net.adamcin.httpsig.api.Authorization;
@@ -12,6 +39,7 @@ import net.adamcin.httpsig.jce.AuthorizedKeys;
 import net.adamcin.sling.auth.httpsig.UserKeyIdentifier;
 import org.apache.felix.scr.annotations.Activate;
 import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Deactivate;
 import org.apache.felix.scr.annotations.Properties;
 import org.apache.felix.scr.annotations.Property;
 import org.apache.felix.scr.annotations.Reference;
@@ -21,6 +49,7 @@ import org.apache.sling.auth.core.spi.AuthenticationHandler;
 import org.apache.sling.auth.core.spi.AuthenticationInfo;
 import org.apache.sling.commons.osgi.OsgiUtil;
 import org.apache.sling.jcr.api.SlingRepository;
+import org.apache.sling.settings.SlingSettingsService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -66,6 +95,9 @@ public class SignatureAuthenticationHandler
     @Reference
     private SlingRepository repository;
 
+    @Reference
+    private SlingSettingsService slingSettingsService;
+
     private String realm;
     private List<String> headers;
     private long skew;
@@ -89,15 +121,33 @@ public class SignatureAuthenticationHandler
         this.challenge = new Challenge(this.realm, this.headers, this.keychain.getAlgorithms());
     }
 
+    @Deactivate
+    protected void deactivate(Map<String, Object> props) {
+        this.realm = null;
+        this.headers = null;
+        this.skew = -1L;
+        this.username = null;
+        this.authorizedKeys = null;
+        this.keyIdentifier = null;
+        this.keychain = null;
+        this.challenge = null;
+        this.userCredentials = null;
+    }
+
     private Keychain loadKeychain() {
         try {
-            if (this.authorizedKeys == null) {
-                return AuthorizedKeys.defaultKeychain();
+            if (this.authorizedKeys == null || this.authorizedKeys.trim().isEmpty()) {
+                File slingHomeAuthKeys = new File(slingSettingsService.getSlingHomePath(), "../.ssh/authorized_keys");
+                if (slingHomeAuthKeys.exists()) {
+                    return AuthorizedKeys.newKeychain(slingHomeAuthKeys);
+                } else {
+                    return AuthorizedKeys.defaultKeychain();
+                }
             } else {
                 return AuthorizedKeys.newKeychain(new File(this.authorizedKeys));
             }
         } catch (IOException e) {
-            LOGGER.error("[getKeychain] failed to get a keychain.", e);
+            LOGGER.error("[loadKeychain] failed to get a keychain.", e);
         }
         return new DefaultKeychain();
     }
