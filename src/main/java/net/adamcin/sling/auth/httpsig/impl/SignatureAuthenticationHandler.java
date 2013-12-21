@@ -34,6 +34,7 @@ import net.adamcin.httpsig.api.DefaultKeychain;
 import net.adamcin.httpsig.api.Keychain;
 import net.adamcin.httpsig.api.SignatureBuilder;
 import net.adamcin.httpsig.api.Verifier;
+import net.adamcin.httpsig.api.VerifyResult;
 import net.adamcin.httpsig.helpers.servlet.ServletUtil;
 import net.adamcin.httpsig.jce.AuthorizedKeys;
 import net.adamcin.sling.auth.httpsig.UserKeyIdentifier;
@@ -65,19 +66,25 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * Implementation of {@link AuthenticationHandler} to support HTTP Signature authentication for one configured user,
+ * such as the admin user or another user designated for use by automated deployment and configuration management
+ * systems. This relies on JCR Token authentication to establish trusted repository login.
  *
+ * TODO: support more than one user
  */
-@Component(label = "%auth.httpsig.name", description = "%auth.httpsig.description")
+@Component(label = "%httpsig.name", description = "%httpsig.description", metatype = true)
 @Service
 @Properties({
-    @Property(name = org.apache.sling.auth.core.spi.AuthenticationHandler.PATH_PROPERTY, value = "/"),
-    @Property(name = "service.ranking", intValue = 2500, propertyPrivate = false) })
+    @Property(name = org.apache.sling.auth.core.spi.AuthenticationHandler.PATH_PROPERTY, value = "/",
+              label = "%httpsig.path.name", description = "%httpsig.path.description"),
+    @Property(name = "service.ranking", intValue = 2500, label = "%httpsig.ranking.name",
+              description = "%httpsig.ranking.description") })
 public class SignatureAuthenticationHandler
         implements AuthenticationHandler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SignatureAuthenticationHandler.class);
 
-    @Property(value = "request-line date")
+    @Property(value = "date")
     private static final String OSGI_HEADERS = "httpsig.headers";
 
     @Property(value = "Sling (Development)")
@@ -178,9 +185,39 @@ public class SignatureAuthenticationHandler
         if (authz != null) {
             Verifier verifier = new Verifier(this.keychain, this.keyIdentifier);
             verifier.setSkew(this.skew);
-            if (verifier.verify(this.challenge, signatureBuilder, authz)) {
+            VerifyResult result = verifier.verifyWithResult(this.challenge, signatureBuilder, authz);
+
+            if (result == VerifyResult.SUCCESS) {
                 this.userCredentials = getCredentials(this.username, this.userCredentials);
                 return this.createAuthInfo(this.username, this.userCredentials);
+            } else {
+                if (LOGGER.isDebugEnabled()) {
+                    switch (result) {
+                        case CHALLENGE_NOT_SATISFIED:
+                            LOGGER.debug("[extractCredentials] verify result: {}, cHeaders: {}, aHeaders: {}",
+                                    new Object[]{result, challenge.getHeaders(), authz.getHeaders()}
+                            );
+                            break;
+                        case EXPIRED_DATE_HEADER:
+                            LOGGER.debug("[extractCredentials] verify result: {}, skewMS: {}, date header: {}",
+                                         new Object[]{ result, verifier.getSkew(), signatureBuilder.getDate() });
+                            break;
+                        case FAILED_KEY_VERIFY:
+                        case INCOMPLETE_REQUEST:
+                            LOGGER.debug("[extractCredentials] verify result: {}, aHeaders: {}, rHeaders: {}, request-line: {}",
+                                         new Object[]{ result,
+                                                 authz.getHeaders(),
+                                                 signatureBuilder.getHeaderNames(),
+                                                 signatureBuilder.getRequestLine() });
+                            break;
+                        case KEY_NOT_FOUND:
+                            LOGGER.debug("[extractCredentials] verify result: {}, keyId: {}",
+                                         new Object[]{ result, authz.getKeyId() });
+                            break;
+                        default:
+                            LOGGER.error("[extractCredentials] verify result: {}", result);
+                    }
+                }
             }
         }
 
