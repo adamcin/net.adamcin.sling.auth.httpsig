@@ -28,17 +28,19 @@
 
 <document>
     <properties>
-        <title>httpsig-java: Implementation of HTTP Signature Authentication in Java</title>
+        <title>net.adamcin.sling.auth.httpsig: Implementation of HTTP Signature Authentication for Sling</title>
     </properties>
     <body>
-        <section name="httpsig-java">
+        <section name="net.adamcin.sling.auth.httpsig">
             <p>
-                Visit the <a href="http://wiki.github.com/adamcin/httpsig-java/">Wiki for more information.</a>
+                Visit the <a href="http://wiki.github.com/adamcin/net.adamcin.sling.auth.httpsig/">Wiki for more information.</a>
             </p>
             <subsection name="Requirements">
                 <ul>
-                    <li>JDK 1.5+ (runtime)</li>
-                    <li>JDK 7+ (tests)</li>
+                    <li>JDK 1.6+</li>
+                    <li>sling 6</li>
+                    <li>jackrabbit 2.4</li>
+                    <li>net.adamcin.httpsig.osgi 0.6.0</li>
                 </ul>
             </subsection>
         </section>
