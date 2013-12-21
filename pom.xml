@@ -82,6 +82,12 @@
         </developer>
     </developers>
 
+    <licenses>
+        <license>
+            <name>Public Domain (Unlicense)</name>
+        </license>
+    </licenses>
+
     <build>
         <plugins>
             <plugin>
