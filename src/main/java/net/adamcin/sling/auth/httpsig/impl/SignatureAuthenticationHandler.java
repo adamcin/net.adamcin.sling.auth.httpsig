@@ -37,7 +37,7 @@ import net.adamcin.httpsig.api.Verifier;
 import net.adamcin.httpsig.api.VerifyResult;
 import net.adamcin.httpsig.helpers.servlet.ServletUtil;
 import net.adamcin.httpsig.jce.AuthorizedKeys;
-import net.adamcin.sling.auth.httpsig.UserKeyIdentifier;
+import net.adamcin.httpsig.jce.UserFingerprintKeyId;
 import org.apache.felix.scr.annotations.Activate;
 import org.apache.felix.scr.annotations.Component;
 import org.apache.felix.scr.annotations.Deactivate;
@@ -112,7 +112,7 @@ public class SignatureAuthenticationHandler
     private Challenge challenge;
     private String username;
     private Credentials userCredentials;
-    private UserKeyIdentifier keyIdentifier;
+    private UserFingerprintKeyId keyIdentifier;
     private String authorizedKeys;
 
     @Activate
@@ -123,7 +123,7 @@ public class SignatureAuthenticationHandler
         this.skew = OsgiUtil.toLong(props.get(OSGI_SKEW), 1L);
         this.username = OsgiUtil.toString(props.get(OSGI_USERNAME), "");
         this.authorizedKeys = OsgiUtil.toString(props.get(OSGI_AUTHORIZED_KEYS), null);
-        this.keyIdentifier = new UserKeyIdentifier(this.username);
+        this.keyIdentifier = new UserFingerprintKeyId(this.username);
         this.keychain = this.loadKeychain();
         this.challenge = new Challenge(this.realm, this.headers, this.keychain.getAlgorithms());
     }
