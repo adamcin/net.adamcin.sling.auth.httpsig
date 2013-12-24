@@ -249,19 +249,19 @@
         </dependency>
         <dependency>
             <groupId>net.adamcin.httpsig</groupId>
-            <artifactId>httpsig-jce</artifactId>
+            <artifactId>httpsig-ssh-jce</artifactId>
             <version>${httpsig.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>net.adamcin.httpsig</groupId>
-            <artifactId>httpsig-bouncycastle</artifactId>
+            <artifactId>httpsig-ssh-bc</artifactId>
             <version>${httpsig.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>net.adamcin.httpsig</groupId>
-            <artifactId>httpsig-helpers</artifactId>
+            <artifactId>httpsig-http-helpers</artifactId>
             <version>${httpsig.version}</version>
             <scope>provided</scope>
         </dependency>
