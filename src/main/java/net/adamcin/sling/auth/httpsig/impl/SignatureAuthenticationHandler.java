@@ -32,12 +32,12 @@ import net.adamcin.httpsig.api.Challenge;
 import net.adamcin.httpsig.api.Constants;
 import net.adamcin.httpsig.api.DefaultKeychain;
 import net.adamcin.httpsig.api.Keychain;
-import net.adamcin.httpsig.api.SignatureBuilder;
+import net.adamcin.httpsig.api.RequestContent;
 import net.adamcin.httpsig.api.Verifier;
 import net.adamcin.httpsig.api.VerifyResult;
-import net.adamcin.httpsig.helpers.servlet.ServletUtil;
-import net.adamcin.httpsig.jce.AuthorizedKeys;
-import net.adamcin.httpsig.jce.UserFingerprintKeyId;
+import net.adamcin.httpsig.http.servlet.ServletUtil;
+import net.adamcin.httpsig.ssh.jce.AuthorizedKeys;
+import net.adamcin.httpsig.ssh.jce.UserFingerprintKeyId;
 import org.apache.felix.scr.annotations.Activate;
 import org.apache.felix.scr.annotations.Component;
 import org.apache.felix.scr.annotations.Deactivate;
@@ -162,9 +162,9 @@ public class SignatureAuthenticationHandler
     public AuthenticationInfo extractCredentials(HttpServletRequest request, HttpServletResponse response) {
         Authorization authz = ServletUtil.getAuthorization(request);
         if (authz != null) {
-            SignatureBuilder signatureBuilder = ServletUtil.getSignatureBuilder(request);
+            RequestContent requestContent = ServletUtil.getRequestContent(request);
 
-            AuthenticationInfo info = extractCredentials(authz, signatureBuilder);
+            AuthenticationInfo info = extractCredentials(authz, requestContent);
             if (info != null) {
                 return info;
             } else {
@@ -181,11 +181,11 @@ public class SignatureAuthenticationHandler
         return null;
     }
 
-    private AuthenticationInfo extractCredentials(Authorization authz, SignatureBuilder signatureBuilder) {
+    private AuthenticationInfo extractCredentials(Authorization authz, RequestContent requestContent) {
         if (authz != null) {
             Verifier verifier = new Verifier(this.keychain, this.keyIdentifier);
             verifier.setSkew(this.skew);
-            VerifyResult result = verifier.verifyWithResult(this.challenge, signatureBuilder, authz);
+            VerifyResult result = verifier.verifyWithResult(this.challenge, requestContent, authz);
 
             if (result == VerifyResult.SUCCESS) {
                 this.userCredentials = getCredentials(this.username, this.userCredentials);
@@ -200,15 +200,15 @@ public class SignatureAuthenticationHandler
                             break;
                         case EXPIRED_DATE_HEADER:
                             LOGGER.debug("[extractCredentials] verify result: {}, skewMS: {}, date header: {}",
-                                         new Object[]{ result, verifier.getSkew(), signatureBuilder.getDate() });
+                                         new Object[]{ result, verifier.getSkew(), requestContent.getDate() });
                             break;
                         case FAILED_KEY_VERIFY:
                         case INCOMPLETE_REQUEST:
                             LOGGER.debug("[extractCredentials] verify result: {}, aHeaders: {}, rHeaders: {}, request-line: {}",
                                          new Object[]{ result,
                                                  authz.getHeaders(),
-                                                 signatureBuilder.getHeaderNames(),
-                                                 signatureBuilder.getRequestLine() });
+                                                 requestContent.getHeaderNames(),
+                                                 requestContent.getRequestLine() });
                             break;
                         case KEY_NOT_FOUND:
                             LOGGER.debug("[extractCredentials] verify result: {}, keyId: {}",

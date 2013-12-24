@@ -47,7 +47,7 @@
         <encoding>UTF-8</encoding>
         <maven.compiler.source>1.5</maven.compiler.source>
         <maven.compiler.target>1.5</maven.compiler.target>
-        <httpsig.version>0.6.0</httpsig.version>
+        <httpsig.version>0.9.0-SNAPSHOT</httpsig.version>
         <slf4j.version>1.6.1</slf4j.version>
         <junit.version>4.10</junit.version>
         <maven.bundle.plugin.version>2.3.7</maven.bundle.plugin.version>
