@@ -37,7 +37,7 @@ import net.adamcin.httpsig.api.Verifier;
 import net.adamcin.httpsig.api.VerifyResult;
 import net.adamcin.httpsig.http.servlet.ServletUtil;
 import net.adamcin.httpsig.ssh.jce.AuthorizedKeys;
-import net.adamcin.httpsig.ssh.jce.UserFingerprintKeyId;
+import net.adamcin.httpsig.ssh.jce.UserKeysFingerprintKeyId;
 import org.apache.felix.scr.annotations.Activate;
 import org.apache.felix.scr.annotations.Component;
 import org.apache.felix.scr.annotations.Deactivate;
@@ -77,7 +77,7 @@ import java.util.Map;
 @Properties({
     @Property(name = org.apache.sling.auth.core.spi.AuthenticationHandler.PATH_PROPERTY, value = "/",
               label = "%httpsig.path.name", description = "%httpsig.path.description"),
-    @Property(name = "service.ranking", intValue = 2500, label = "%httpsig.ranking.name",
+    @Property(name = "service.ranking", intValue = 0, label = "%httpsig.ranking.name", propertyPrivate = false,
               description = "%httpsig.ranking.description") })
 public class SignatureAuthenticationHandler
         implements AuthenticationHandler {
@@ -112,7 +112,7 @@ public class SignatureAuthenticationHandler
     private Challenge challenge;
     private String username;
     private Credentials userCredentials;
-    private UserFingerprintKeyId keyIdentifier;
+    private UserKeysFingerprintKeyId keyIdentifier;
     private String authorizedKeys;
 
     @Activate
@@ -123,7 +123,7 @@ public class SignatureAuthenticationHandler
         this.skew = OsgiUtil.toLong(props.get(OSGI_SKEW), 1L);
         this.username = OsgiUtil.toString(props.get(OSGI_USERNAME), "");
         this.authorizedKeys = OsgiUtil.toString(props.get(OSGI_AUTHORIZED_KEYS), null);
-        this.keyIdentifier = new UserFingerprintKeyId(this.username);
+        this.keyIdentifier = new UserKeysFingerprintKeyId(this.username);
         this.keychain = this.loadKeychain();
         this.challenge = new Challenge(this.realm, this.headers, this.keychain.getAlgorithms());
     }
