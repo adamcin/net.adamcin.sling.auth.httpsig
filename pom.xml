@@ -43,6 +43,8 @@
     <name>${project.artifactId}</name>
     <description>HTTP Signature Authentication Handler implementation for Apache Sling</description>
 
+    <url>http://adamcin.net/${project.artifactId}</url>
+
     <properties>
         <encoding>UTF-8</encoding>
         <maven.compiler.source>1.5</maven.compiler.source>
