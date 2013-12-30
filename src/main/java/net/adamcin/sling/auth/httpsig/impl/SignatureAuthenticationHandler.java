@@ -69,16 +69,17 @@ import java.util.Map;
  * Implementation of {@link AuthenticationHandler} to support HTTP Signature authentication for one configured user,
  * such as the admin user or another user designated for use by automated deployment and configuration management
  * systems. This relies on JCR Token authentication to establish trusted repository login.
- *
+ * <p/>
  * TODO: support more than one user
  */
 @Component(label = "%httpsig.name", description = "%httpsig.description", metatype = true)
 @Service
 @Properties({
-    @Property(name = org.apache.sling.auth.core.spi.AuthenticationHandler.PATH_PROPERTY, value = "/",
-              label = "%httpsig.path.name", description = "%httpsig.path.description"),
-    @Property(name = "service.ranking", intValue = 0, label = "%httpsig.ranking.name", propertyPrivate = false,
-              description = "%httpsig.ranking.description") })
+        @Property(name = AuthenticationHandler.PATH_PROPERTY, value = "/",
+                label = "%httpsig.path.name", description = "%httpsig.path.description"),
+        @Property(name = AuthenticationHandler.TYPE_PROPERTY, value = Constants.SCHEME, propertyPrivate = true),
+        @Property(name = "service.ranking", intValue = 0, label = "%httpsig.ranking.name", propertyPrivate = false,
+                description = "%httpsig.ranking.description")})
 public class SignatureAuthenticationHandler
         implements AuthenticationHandler {
 
@@ -166,7 +167,12 @@ public class SignatureAuthenticationHandler
 
             AuthenticationInfo info = extractCredentials(authz, requestContent);
             if (info != null) {
-                return info;
+                if ("true".equalsIgnoreCase(request.getParameter("j_validate"))) {
+                    sendValid(response);
+                    return AuthenticationInfo.DOING_AUTH;
+                } else {
+                    return info;
+                }
             } else {
                 try {
                     if (ServletUtil.sendChallenge(response, this.challenge)) {
@@ -179,6 +185,27 @@ public class SignatureAuthenticationHandler
         }
 
         return null;
+    }
+
+    private static void sendValid(HttpServletResponse response) {
+        LOGGER.debug("[sendValid] sending 200/ok");
+        if (response.isCommitted()) {
+            throw new IllegalStateException("Response is already committed");
+        }
+        response.resetBuffer();
+
+        try {
+            response.setStatus(200);
+            response.setContentType("text/plain");
+            response.setContentLength(0);
+            response.setHeader("Pragma", "no-cache");
+            response.setHeader("Cache-Control", "no-cache");
+            response.setHeader("Cache-Control", "no-store");
+
+            response.flushBuffer();
+        } catch (IOException e) {
+            LOGGER.error("Failed to send 'valid' response");
+        }
     }
 
     private AuthenticationInfo extractCredentials(Authorization authz, RequestContent requestContent) {
@@ -200,19 +227,19 @@ public class SignatureAuthenticationHandler
                             break;
                         case EXPIRED_DATE_HEADER:
                             LOGGER.debug("[extractCredentials] verify result: {}, skewMS: {}, date header: {}",
-                                         new Object[]{ result, verifier.getSkew(), requestContent.getDate() });
+                                    new Object[]{result, verifier.getSkew(), requestContent.getDate()});
                             break;
                         case FAILED_KEY_VERIFY:
                         case INCOMPLETE_REQUEST:
                             LOGGER.debug("[extractCredentials] verify result: {}, aHeaders: {}, rHeaders: {}, request-line: {}",
-                                         new Object[]{ result,
-                                                 authz.getHeaders(),
-                                                 requestContent.getHeaderNames(),
-                                                 requestContent.getRequestLine() });
+                                    new Object[]{result,
+                                            authz.getHeaders(),
+                                            requestContent.getHeaderNames(),
+                                            requestContent.getRequestLine()});
                             break;
                         case KEY_NOT_FOUND:
                             LOGGER.debug("[extractCredentials] verify result: {}, keyId: {}",
-                                         new Object[]{ result, authz.getKeyId() });
+                                    new Object[]{result, authz.getKeyId()});
                             break;
                         default:
                             LOGGER.error("[extractCredentials] verify result: {}", result);
@@ -270,6 +297,9 @@ public class SignatureAuthenticationHandler
     }
 
     public boolean requestCredentials(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        if (request.getParameter(AuthenticationHandler.REQUEST_LOGIN_PARAMETER) != null) {
+
+        }
         return false;
     }
 
