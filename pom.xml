@@ -240,25 +240,7 @@
     <dependencies>
         <dependency>
             <groupId>net.adamcin.httpsig</groupId>
-            <artifactId>httpsig-api</artifactId>
-            <version>${httpsig.version}</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>net.adamcin.httpsig</groupId>
-            <artifactId>httpsig-ssh-jce</artifactId>
-            <version>${httpsig.version}</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>net.adamcin.httpsig</groupId>
-            <artifactId>httpsig-ssh-bc</artifactId>
-            <version>${httpsig.version}</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>net.adamcin.httpsig</groupId>
-            <artifactId>httpsig-http-helpers</artifactId>
+            <artifactId>net.adamcin.httpsig.osgi</artifactId>
             <version>${httpsig.version}</version>
             <scope>provided</scope>
         </dependency>
