@@ -297,9 +297,6 @@ public class SignatureAuthenticationHandler
     }
 
     public boolean requestCredentials(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        if (request.getParameter(AuthenticationHandler.REQUEST_LOGIN_PARAMETER) != null) {
-
-        }
         return false;
     }
 
