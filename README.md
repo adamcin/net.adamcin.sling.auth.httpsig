@@ -16,3 +16,4 @@ How It Works
 
 1. Use a Signature-enabled HTTP client to interact with the Sling instance, with a keyId format following the Joyent convention of "/$username/keys/$fingerprint". You can find Java-based helpers in [httpsig-java](https://github.com/adamcin/httpsig-java) for Apache Commons HttpClient 3.x, Apache Http Components 4.x, and Ning AsyncHttpClient.
 
+[![Analytics](https://ga-beacon.appspot.com/UA-37073514-2/net.adamcin.sling.auth.httpsig/blob/master/README.md)](https://github.com/igrigorik/ga-beacon)
