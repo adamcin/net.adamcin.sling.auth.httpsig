@@ -165,6 +165,7 @@ public class SignatureAuthenticationHandler
         if (authz != null) {
             RequestContent requestContent = ServletUtil.getRequestContent(request);
 
+            LOGGER.debug("[extractCredentials] requestContent: {}", requestContent);
             AuthenticationInfo info = extractCredentials(authz, requestContent);
             if (info != null) {
                 if ("true".equalsIgnoreCase(request.getParameter("j_validate"))) {
