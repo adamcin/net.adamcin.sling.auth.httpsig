@@ -40,8 +40,8 @@
     <version>0.8.3-SNAPSHOT</version>
     <packaging>bundle</packaging>
 
-    <name>${project.artifactId}</name>
-    <description>HTTP Signature Authentication Handler implementation for Apache Sling</description>
+    <name>Sling HTTP Signature Authentication Handler</name>
+    <description>HTTP Signature Authentication Handler implementation for Apache Sling based on httpsig-java</description>
 
     <url>http://adamcin.net/${project.artifactId}</url>
 
