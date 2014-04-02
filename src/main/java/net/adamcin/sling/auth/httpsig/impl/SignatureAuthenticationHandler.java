@@ -31,6 +31,7 @@ import net.adamcin.httpsig.api.Authorization;
 import net.adamcin.httpsig.api.Challenge;
 import net.adamcin.httpsig.api.Constants;
 import net.adamcin.httpsig.api.DefaultKeychain;
+import net.adamcin.httpsig.api.DefaultVerifier;
 import net.adamcin.httpsig.api.Keychain;
 import net.adamcin.httpsig.api.RequestContent;
 import net.adamcin.httpsig.api.Verifier;
@@ -211,8 +212,7 @@ public class SignatureAuthenticationHandler
 
     private AuthenticationInfo extractCredentials(Authorization authz, RequestContent requestContent) {
         if (authz != null) {
-            Verifier verifier = new Verifier(this.keychain, this.keyIdentifier);
-            verifier.setSkew(this.skew);
+            Verifier verifier = new DefaultVerifier(this.keychain, this.keyIdentifier, this.skew);
             VerifyResult result = verifier.verifyWithResult(this.challenge, requestContent, authz);
 
             if (result == VerifyResult.SUCCESS) {
