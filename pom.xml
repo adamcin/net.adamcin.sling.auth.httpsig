@@ -37,7 +37,7 @@
 
     <groupId>net.adamcin.sling</groupId>
     <artifactId>net.adamcin.sling.auth.httpsig</artifactId>
-    <version>0.8.4</version>
+    <version>0.8.5-SNAPSHOT</version>
     <packaging>bundle</packaging>
 
     <name>Sling HTTP Signature Authentication Handler</name>
